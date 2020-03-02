@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.9)
 
+if(DEFINED PROJECT_NAME)
+  set(SUBPROJECT ON)
+endif()
+
 project(
   actorpp
   VERSION 0.0.1
@@ -16,5 +20,7 @@ target_include_directories(actorpp INTERFACE ${PROJECT_SOURCE_DIR}/include)
 target_compile_features(actorpp INTERFACE cxx_std_11)
 target_link_libraries(actorpp INTERFACE ${CMAKE_THREAD_LIBS_INIT})
 
-include(CTest)
-add_subdirectory(test)
+if(NOT SUBPROJECT)
+  include(CTest)
+  add_subdirectory(test)
+endif()
