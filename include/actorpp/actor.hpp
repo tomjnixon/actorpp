@@ -73,6 +73,11 @@ template <typename T> struct ChannelImpl {
     return element;
   }
 
+  bool readable() {
+    std::unique_lock<std::mutex> lock(actor_impl->mut);
+    return readable_with_lock();
+  }
+
   bool readable_with_lock() { return !elements.empty(); }
 };
 } // namespace detail
@@ -116,6 +121,9 @@ public:
 
   /// pop an element, blocking if empty
   T read() { return impl->read(); }
+
+  /// is this non-empty?
+  bool readable() { return impl->readable(); }
 
   /// is this non-empty? requires the associated lock to be held
   bool readable_with_lock() { return impl->readable_with_lock(); }
