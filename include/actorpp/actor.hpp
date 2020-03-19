@@ -45,15 +45,15 @@ template <typename T> struct ChannelImpl {
   std::shared_ptr<detail::ActorImpl> actor_impl;
   std::queue<T> elements;
 
-  void push(const T &item) {
+  template <typename TT> void push(TT &&item) {
     std::unique_lock<std::mutex> lock(actor_impl->mut);
-    elements.emplace(item);
+    elements.push(std::forward<TT>(item));
     actor_impl->cv.notify_one();
   }
 
-  void push(T &&item) {
+  template <class... Args> void emplace(Args &&... args) {
     std::unique_lock<std::mutex> lock(actor_impl->mut);
-    elements.emplace(item);
+    elements.emplace(std::forward<Args>(args)...);
     actor_impl->cv.notify_one();
   }
 
@@ -113,9 +113,13 @@ public:
       : impl(std::make_shared<detail::ChannelImpl<T>>(
             std::make_shared<detail::ActorImpl>())) {}
 
-  void push(const T &item) { impl->push(item); }
+  template <typename TT> void push(TT &&item) {
+    impl->push(std::forward<TT>(item));
+  }
 
-  void push(T &&item) { impl->push(std::move(item)); }
+  template <typename... Args> void emplace(Args... args) {
+    impl->emplace(std::forward<Args>(args)...);
+  }
 
   /// pop an element, will assert if empty
   T pop() { return impl->pop(); }
