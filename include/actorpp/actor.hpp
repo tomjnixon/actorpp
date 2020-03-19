@@ -103,6 +103,7 @@ template <typename T> class Channel {
   std::shared_ptr<detail::ChannelImpl<T>> impl;
 
 public:
+  using type = T;
   /// associated with a specified actor, which allows that actor to wait for
   /// this channel at the same time as others.
   Channel(Actor &actor)
