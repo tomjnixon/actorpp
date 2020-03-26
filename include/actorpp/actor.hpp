@@ -145,7 +145,7 @@ public:
   template <typename... Args>
   ActorThread(Args&&... args)
       : ActorT(std::forward<Args>(args)...),
-        thread([&] { this->template run(); }) {}
+        thread([&] { this->run(); }) {}
 
   ~ActorThread() { thread.join(); }
 
