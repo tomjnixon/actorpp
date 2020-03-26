@@ -1,6 +1,5 @@
 #pragma once
 #include "actor.hpp"
-#include <iostream>
 #include <netdb.h>
 #include <string.h>
 #include <sys/socket.h>
