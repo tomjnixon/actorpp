@@ -2,7 +2,6 @@
 #include "actor.hpp"
 #include <iostream>
 #include <netdb.h>
-#include <poll.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -13,6 +12,42 @@ enum class CloseReason {
   Normal,
   Error,
 };
+
+#if !defined(ACTORPP_RECV_THREAD_SHUTDOWN) && !defined(ACTORPP_RECV_THREAD_PIPE)
+#define ACTORPP_RECV_THREAD_PIPE
+#endif
+
+#if defined(ACTORPP_RECV_THREAD_SHUTDOWN)
+
+class RecvThread : Actor {
+public:
+  RecvThread(int fd, Channel<std::vector<uint8_t>> on_message,
+             Channel<CloseReason> on_close)
+      : fd(fd), on_message(on_message), on_close(on_close) {}
+  void run() {
+    while (true) {
+      std::vector<uint8_t> buf(128);
+      int bytes_read = recv(fd, buf.data(), buf.size(), 0);
+      if (bytes_read > 0) {
+        buf.resize(bytes_read);
+        on_message.push(std::move(buf));
+      } else {
+        on_close.push(CloseReason::Normal);
+        break;
+      }
+    }
+  }
+
+  void exit() { shutdown(fd, SHUT_RD); }
+
+private:
+  int fd;
+  Channel<std::vector<uint8_t>> on_message;
+  Channel<CloseReason> on_close;
+};
+
+#elif defined(ACTORPP_RECV_THREAD_PIPE)
+#include <sys/poll.h>
 
 class RecvThread : Actor {
 public:
@@ -53,6 +88,10 @@ private:
   Channel<CloseReason> on_close;
   int pipe_fds[2];
 };
+
+#else
+#error "unknown RecvThread implementation"
+#endif
 
 int connect(std::string hostname, int port) {
   struct addrinfo hints;
