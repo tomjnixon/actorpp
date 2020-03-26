@@ -143,7 +143,7 @@ public:
 template <typename ActorT> class ActorThread : public ActorT {
 public:
   template <typename... Args>
-  ActorThread(Args... args)
+  ActorThread(Args&&... args)
       : ActorT(std::forward<Args>(args)...),
         thread([&] { this->template run(); }) {}
 
