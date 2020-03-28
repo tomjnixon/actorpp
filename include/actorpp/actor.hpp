@@ -32,9 +32,30 @@ struct ActorImpl {
   template <typename... T> int wait(Channel<T> &... c) {
     std::unique_lock<std::mutex> lock(mut);
     int i;
-    while ((i = detail::readable_channel(0, c...)) == -1) {
-      cv.wait(lock);
-    }
+    cv.wait(lock,
+            [&]() { return (i = detail::readable_channel(0, c...)) != -1; });
+    return i;
+  }
+
+  template <class Clock, class Duration, typename... T>
+  int wait_until(const std::chrono::time_point<Clock, Duration> &timeout_time,
+                 Channel<T> &... c) {
+    std::unique_lock<std::mutex> lock(mut);
+    int i;
+    cv.wait_until(lock, timeout_time, [&]() {
+      return (i = detail::readable_channel(0, c...)) != -1;
+    });
+    return i;
+  }
+
+  template <class Rep, class Period, typename... T>
+  int wait_for(const std::chrono::duration<Rep, Period> &rel_time,
+               Channel<T> &... c) {
+    std::unique_lock<std::mutex> lock(mut);
+    int i;
+    cv.wait_for(lock, rel_time, [&]() {
+      return (i = detail::readable_channel(0, c...)) != -1;
+    });
     return i;
   }
 };
@@ -95,6 +116,24 @@ public:
   /// with this actor.
   template <typename... T> int wait(Channel<T> &... c) {
     return impl->wait(c...);
+  }
+
+  /// Wait for data to arrive in one of n channels with a timeout; returns the
+  /// index of the first channel that has available data, or -1 if timeout_time
+  /// is reached. All channels must be associated with this actor.
+  template <class Clock, class Duration, typename... T>
+  int wait_until(const std::chrono::time_point<Clock, Duration> &timeout_time,
+                 Channel<T> &... c) {
+    return impl->wait_until(timeout_time, c...);
+  }
+
+  /// Wait for data to arrive in one of n channels with a timeout; returns the
+  /// index of the first channel that has available data, or -1 if rel_time has
+  /// elapsed. All channels must be associated with this actor.
+  template <class Rep, class Period, typename... T>
+  int wait_for(const std::chrono::duration<Rep, Period> &rel_time,
+               Channel<T> &... c) {
+    return impl->wait_for(rel_time, c...);
   }
 };
 
