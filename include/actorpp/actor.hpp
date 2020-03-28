@@ -91,8 +91,8 @@ public:
   Actor() : impl(std::make_shared<detail::ActorImpl>()) {}
 
   /// Wait for data to arrive in one of n channels; returns the index of the
-  /// first channel that has available data. All channels be associated with
-  /// this actor.
+  /// first channel that has available data. All channels must be associated
+  /// with this actor.
   template <typename... T> int wait(Channel<T> &... c) {
     return impl->wait(c...);
   }
