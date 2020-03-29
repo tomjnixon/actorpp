@@ -74,6 +74,7 @@ public:
           on_message.push(std::move(buf));
         } else {
           on_close.push(CloseReason::Normal);
+          break;
         }
       }
     }
