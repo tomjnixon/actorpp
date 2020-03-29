@@ -18,7 +18,7 @@ add_library(actorpp::actorpp ALIAS actorpp)
 target_include_directories(actorpp INTERFACE ${PROJECT_SOURCE_DIR}/include)
 
 target_compile_features(actorpp INTERFACE cxx_std_11)
-target_link_libraries(actorpp INTERFACE ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(actorpp INTERFACE Threads::Threads)
 
 if(NOT SUBPROJECT)
   include(CTest)
