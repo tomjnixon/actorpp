@@ -174,7 +174,8 @@ public:
 };
 
 /// Wrapper around a class derived from Actor, which runs its `void run()`
-/// method in a thread.
+/// method in a thread, and its `void exit()` method in the destructor. For the
+/// thread to be cleaned up, `exit` must cause `run` to return.
 ///
 /// This can't be implemented nicely through regular inheritance, because the
 /// constructor of a base class can't safely call derived methods, so we can't
@@ -185,7 +186,10 @@ public:
   ActorThread(Args &&... args)
       : ActorT(std::forward<Args>(args)...), thread([&] { this->run(); }) {}
 
-  ~ActorThread() { thread.join(); }
+  ~ActorThread() {
+    this->exit();
+    thread.join();
+  }
 
 private:
   std::thread thread;

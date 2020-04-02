@@ -7,23 +7,24 @@ using namespace actorpp;
 
 class PingPong : public Actor {
 public:
-  PingPong(Channel<int> pong) : ping(*this), exit(*this), pong(pong) {}
+  PingPong(Channel<int> pong) : ping(*this), do_exit(*this), pong(pong) {}
   Channel<int> ping;
-  Channel<bool> exit;
+  Channel<bool> do_exit;
 
   void run() {
     while (true) {
-      switch (wait(ping, exit)) {
+      switch (wait(ping, do_exit)) {
       case 0:
         pong.push(ping.pop());
         break;
       case 1:
-        if (exit.pop())
+        if (do_exit.pop())
           return;
         break;
       }
     }
   }
+  void exit() { do_exit.push(true); }
 
   Channel<int> pong;
 };
@@ -39,8 +40,6 @@ TEST_CASE("ping pong") {
   pp.ping.push(6);
   self.wait(pong);
   REQUIRE(pong.pop() == 6);
-
-  pp.exit.push(true);
 }
 
 TEST_CASE("ping pong no self") {
@@ -52,8 +51,6 @@ TEST_CASE("ping pong no self") {
 
   pp.ping.push(6);
   REQUIRE(pong.read() == 6);
-
-  pp.exit.push(true);
 }
 
 template <typename TimeT> class SendAfter : public Actor {
@@ -67,6 +64,8 @@ public:
     std::this_thread::sleep_for(wait_time);
     chan.push(true);
   }
+
+  void exit() {}
 };
 
 TEST_CASE("wait_for") {
