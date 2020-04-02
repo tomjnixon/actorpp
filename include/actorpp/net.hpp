@@ -82,6 +82,11 @@ public:
 
   void exit() { write(pipe_fds[1], "q", 1); }
 
+  ~RecvThread() {
+    assert(close(pipe_fds[0]) == 0);
+    assert(close(pipe_fds[1]) == 0);
+  }
+
 private:
   int fd;
   Channel<std::vector<uint8_t>> on_message;
