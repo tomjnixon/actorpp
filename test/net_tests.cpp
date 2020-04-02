@@ -20,8 +20,6 @@ TEST_CASE("ping pong") {
     REQUIRE(self.wait(on_message, on_close) == 0);
     std::vector<uint8_t> buf = on_message.pop();
     REQUIRE(std::string((char *)buf.data(), buf.size()) == "pong");
-
-    recv.exit();
   }
   close(fd);
 }
@@ -40,8 +38,6 @@ TEST_CASE("exit") {
 
     REQUIRE(self.wait(on_message, on_close) == 1);
     REQUIRE(on_close.pop() == CloseReason::Normal);
-
-    recv.exit();
   }
 
   close(fd);
