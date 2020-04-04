@@ -94,6 +94,11 @@ template <typename T> struct ChannelImpl {
     return element;
   }
 
+  void clear() {
+    std::unique_lock<std::mutex> lock(actor_impl->mut);
+    elements = {};
+  }
+
   bool readable() {
     std::unique_lock<std::mutex> lock(actor_impl->mut);
     return readable_with_lock();
@@ -165,6 +170,9 @@ public:
 
   /// pop an element, blocking if empty
   T read() { return impl->read(); }
+
+  /// remove all elements
+  void clear() { impl->clear(); }
 
   /// is this non-empty?
   bool readable() { return impl->readable(); }
