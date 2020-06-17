@@ -106,6 +106,9 @@ template <typename T> struct ChannelImpl {
 
   bool readable_with_lock() { return !elements.empty(); }
 };
+
+/// just used for checking that ActorThread isn't applied more than once
+class IActorThread {};
 } // namespace detail
 
 /// An actor, whose only ability is to wait for data in associated channels. To
@@ -188,7 +191,8 @@ public:
 /// This can't be implemented nicely through regular inheritance, because the
 /// constructor of a base class can't safely call derived methods, so we can't
 /// start the thread from the constructor.
-template <typename ActorT> class ActorThread : public ActorT {
+template <typename ActorT>
+class ActorThread : public ActorT, private detail::IActorThread {
 public:
   template <typename... Args>
   ActorThread(Args &&... args)
@@ -201,6 +205,9 @@ public:
 
 private:
   std::thread thread;
+
+  static_assert(!std::is_base_of<detail::IActorThread, ActorT>::value,
+                "ActorThread must only be applied once to an Actor");
 };
 
 } // namespace actorpp
