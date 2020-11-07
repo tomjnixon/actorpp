@@ -60,7 +60,6 @@ public:
     struct pollfd fds[2];
     fds[0].fd = fd;
     fds[0].events = POLLIN;
-    fds[0].events = POLLIN;
     fds[1].fd = pipe_fds[0];
     fds[1].events = POLLIN;
     while (true) {
