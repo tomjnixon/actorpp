@@ -1,5 +1,4 @@
 #pragma once
-#include <cassert>
 #include <condition_variable>
 #include <mutex>
 #include <queue>
@@ -80,8 +79,9 @@ template <typename T> struct ChannelImpl {
 
   T pop() {
     std::unique_lock<std::mutex> lock(actor_impl->mut);
+    if (!readable_with_lock())
+      throw std::logic_error("called pop() on unreadable channel");
     T element = std::move(elements.front());
-    assert(readable_with_lock());
     elements.pop();
     return element;
   }

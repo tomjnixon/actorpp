@@ -53,7 +53,8 @@ public:
   RecvThread(int fd, Channel<std::vector<uint8_t>> on_message,
              Channel<CloseReason> on_close)
       : fd(fd), on_message(on_message), on_close(on_close) {
-    assert(pipe(pipe_fds) == 0);
+    if (pipe(pipe_fds) != 0)
+      throw std::runtime_error("pipe() failed");
   }
   void run() {
     struct pollfd fds[2];
@@ -63,7 +64,8 @@ public:
     fds[1].fd = pipe_fds[0];
     fds[1].events = POLLIN;
     while (true) {
-      assert(poll(fds, 2, -1) > 0);
+      if (poll(fds, 2, -1) <= 0)
+        throw std::runtime_error("poll() failed");
       if (fds[1].revents != 0)
         break;
       if (fds[0].revents & POLLIN) {
@@ -78,14 +80,29 @@ public:
         }
       }
     }
+
+    // wait for data and close the read side of the pipe; this ensures that
+    // exit() never tries to write into a closed pipe
+    char buf[1];
+    if (fds[1].revents == 0)
+      if (read(pipe_fds[0], buf, 1) != 1)
+        throw std::runtime_error("read(pipe fd 0) failed");
+
+    if (close(pipe_fds[0]) != 0)
+      throw std::runtime_error("close(pipe fd 0) failed");
   }
 
-  void exit() { write(pipe_fds[1], "q", 1); }
-
-  ~RecvThread() {
-    assert(close(pipe_fds[0]) == 0);
-    assert(close(pipe_fds[1]) == 0);
+  void exit() {
+    if (pipe_fds[1]) {
+      if (write(pipe_fds[1], "q", 1) != 1)
+        throw std::runtime_error("write(pipe fd 1) failed");
+      if (close(pipe_fds[1]) != 0)
+        throw std::runtime_error("close(pipe fd 1) failed");
+      pipe_fds[1] = 0;
+    }
   }
+
+  ~RecvThread() { exit(); }
 
 private:
   int fd;
