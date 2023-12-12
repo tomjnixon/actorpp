@@ -2,6 +2,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <queue>
+#include <stdexcept>
 #include <thread>
 
 namespace actorpp {
