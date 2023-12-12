@@ -8,6 +8,19 @@ This library is intended to allow simple message-passing communication between
 threads, minimising dependencies and trickery, while being complete
 enough to be useful.
 
+development
+-----------
+
+Build and test with:
+
+```
+cmake -G Ninja -B build . -DCMAKE_BUILD_TYPE=Debug
+ninja -C build && ninja -C build test
+```
+
+For now, you will need to run `python test/test_server.py` while running the
+net tests; this should be replaced with a C++ implementation.
+
 license
 -------
 
