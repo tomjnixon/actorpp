@@ -116,7 +116,7 @@ private:
 #error "unknown RecvThread implementation"
 #endif
 
-int connect(std::string hostname, int port) {
+int connect(const std::string &hostname, int port) {
   struct addrinfo hints;
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_INET;
