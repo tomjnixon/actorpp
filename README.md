@@ -8,6 +8,13 @@ This library is intended to allow simple message-passing communication between
 threads, minimising dependencies and trickery, while being complete
 enough to be useful.
 
+usage
+-----
+
+In a cmake project, add this as a submodule, and include it with
+`add_subdirectory(path/to/actorpp)`. This creates an `actorpp::actorpp` target
+which can be added to `target_link_libraries`.
+
 development
 -----------
 
