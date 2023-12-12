@@ -22,7 +22,8 @@ class RecvThread : Actor {
 public:
   RecvThread(int fd, Channel<std::vector<uint8_t>> on_message,
              Channel<CloseReason> on_close)
-      : fd(fd), on_message(on_message), on_close(on_close) {}
+      : fd(fd), on_message(std::move(on_message)),
+        on_close(std::move(on_close)) {}
   void run() {
     while (true) {
       std::vector<uint8_t> buf(128);
@@ -52,7 +53,8 @@ class RecvThread : Actor {
 public:
   RecvThread(int fd, Channel<std::vector<uint8_t>> on_message,
              Channel<CloseReason> on_close)
-      : fd(fd), on_message(on_message), on_close(on_close) {
+      : fd(fd), on_message(std::move(on_message)),
+        on_close(std::move(on_close)) {
     if (pipe(pipe_fds) != 0)
       throw std::runtime_error("pipe() failed");
   }
