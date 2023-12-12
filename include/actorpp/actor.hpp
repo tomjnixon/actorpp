@@ -18,7 +18,7 @@ template <typename T> int readable_channel(int i, Channel<T> &c) {
 }
 
 template <typename T, typename... Ttail>
-int readable_channel(int i, Channel<T> &c, Channel<Ttail> &... chans) {
+int readable_channel(int i, Channel<T> &c, Channel<Ttail> &...chans) {
   if (c.readable_with_lock())
     return i;
   else
@@ -29,7 +29,7 @@ struct ActorImpl {
   std::mutex mut;
   std::condition_variable cv;
 
-  template <typename... T> int wait(Channel<T> &... c) {
+  template <typename... T> int wait(Channel<T> &...c) {
     std::unique_lock<std::mutex> lock(mut);
     int i;
     cv.wait(lock,
@@ -39,7 +39,7 @@ struct ActorImpl {
 
   template <class Clock, class Duration, typename... T>
   int wait_until(const std::chrono::time_point<Clock, Duration> &timeout_time,
-                 Channel<T> &... c) {
+                 Channel<T> &...c) {
     std::unique_lock<std::mutex> lock(mut);
     int i;
     cv.wait_until(lock, timeout_time, [&]() {
@@ -50,7 +50,7 @@ struct ActorImpl {
 
   template <class Rep, class Period, typename... T>
   int wait_for(const std::chrono::duration<Rep, Period> &rel_time,
-               Channel<T> &... c) {
+               Channel<T> &...c) {
     std::unique_lock<std::mutex> lock(mut);
     int i;
     cv.wait_for(lock, rel_time, [&]() {
@@ -78,7 +78,7 @@ template <typename T> struct ChannelImpl {
     actor_impl->cv.notify_one();
   }
 
-  template <class... Args> void emplace(Args &&... args) {
+  template <class... Args> void emplace(Args &&...args) {
     std::unique_lock<std::mutex> lock(actor_impl->mut);
     elements.emplace(std::forward<Args>(args)...);
     actor_impl->cv.notify_one();
@@ -129,7 +129,7 @@ public:
   /// Wait for data to arrive in one of n channels; returns the index of the
   /// first channel that has available data. All channels must be associated
   /// with this actor.
-  template <typename... T> int wait(Channel<T> &... c) {
+  template <typename... T> int wait(Channel<T> &...c) {
     return impl->wait(c...);
   }
 
@@ -138,7 +138,7 @@ public:
   /// is reached. All channels must be associated with this actor.
   template <class Clock, class Duration, typename... T>
   int wait_until(const std::chrono::time_point<Clock, Duration> &timeout_time,
-                 Channel<T> &... c) {
+                 Channel<T> &...c) {
     return impl->wait_until(timeout_time, c...);
   }
 
@@ -147,7 +147,7 @@ public:
   /// elapsed. All channels must be associated with this actor.
   template <class Rep, class Period, typename... T>
   int wait_for(const std::chrono::duration<Rep, Period> &rel_time,
-               Channel<T> &... c) {
+               Channel<T> &...c) {
     return impl->wait_for(rel_time, c...);
   }
 };
@@ -202,7 +202,7 @@ template <typename ActorT>
 class ActorThread : public ActorT, private detail::IActorThread {
 public:
   template <typename... Args>
-  ActorThread(Args &&... args)
+  ActorThread(Args &&...args)
       : ActorT(std::forward<Args>(args)...), thread([&] { this->run(); }) {}
 
   ~ActorThread() {
