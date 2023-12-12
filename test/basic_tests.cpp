@@ -5,12 +5,13 @@ using namespace std::chrono_literals;
 
 using namespace actorpp;
 
+// example_start
 class PingPong : public Actor {
 public:
   PingPong(Channel<int> pong) : ping(*this), do_exit(*this), pong(pong) {}
   Channel<int> ping;
-  Channel<bool> do_exit;
 
+protected:
   void run() {
     while (true) {
       switch (wait(ping, do_exit)) {
@@ -26,13 +27,18 @@ public:
   }
   void exit() { do_exit.push(true); }
 
+private:
+  Channel<bool> do_exit;
   Channel<int> pong;
 };
+
+using PingPongThread = ActorThread<PingPong>;
+// example_end
 
 TEST_CASE("ping pong") {
   Actor self;
   Channel<int> pong(self);
-  ActorThread<PingPong> pp(pong);
+  PingPongThread pp(pong);
 
   pp.ping.push(5);
   self.wait(pong);
@@ -44,7 +50,7 @@ TEST_CASE("ping pong") {
 
 TEST_CASE("ping pong no self") {
   Channel<int> pong;
-  ActorThread<PingPong> pp(pong);
+  PingPongThread pp(pong);
 
   pp.ping.push(5);
   REQUIRE(pong.read() == 5);
