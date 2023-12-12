@@ -65,9 +65,15 @@ template <typename T> struct ChannelImpl {
   std::shared_ptr<detail::ActorImpl> actor_impl;
   std::queue<T> elements;
 
-  template <typename TT> void push(TT &&item) {
+  void push(const T &item) {
     std::unique_lock<std::mutex> lock(actor_impl->mut);
-    elements.push(std::forward<TT>(item));
+    elements.push(item);
+    actor_impl->cv.notify_one();
+  }
+
+  void push(T &&item) {
+    std::unique_lock<std::mutex> lock(actor_impl->mut);
+    elements.push(std::move(item));
     actor_impl->cv.notify_one();
   }
 
