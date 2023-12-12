@@ -171,7 +171,7 @@ public:
     impl->push(std::forward<TT>(item));
   }
 
-  template <typename... Args> void emplace(Args... args) {
+  template <typename... Args> void emplace(Args &&...args) {
     impl->emplace(std::forward<Args>(args)...);
   }
 
