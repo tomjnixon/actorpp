@@ -2,6 +2,7 @@
 #include <cassert>
 #include <condition_variable>
 #include <cstring>
+#include <initializer_list>
 #include <memory>
 #include <mutex>
 #include <stdexcept>
@@ -13,51 +14,43 @@ namespace actorpp {
 template <typename T> class Channel;
 
 namespace detail {
-template <typename T> int readable_channel(int i, Channel<T> &c) {
-  if (c.readable_with_lock())
-    return i;
-  else
-    return -1;
-}
 
-template <typename T, typename... Ttail>
-int readable_channel(int i, Channel<T> &c, Channel<Ttail> &...chans) {
-  if (c.readable_with_lock())
-    return i;
-  else
-    return readable_channel(i + 1, chans...);
-}
+class ChannelBase;
+
+using channel_list = std::initializer_list<ChannelBase *>;
+
+int readable_channel(channel_list channels);
 
 struct ActorImpl {
   std::mutex mut;
   std::condition_variable cv;
 
-  template <typename... T> int wait(Channel<T> &...c) {
+  int wait(channel_list channels) {
     std::unique_lock<std::mutex> lock(mut);
     int i;
     cv.wait(lock,
-            [&]() { return (i = detail::readable_channel(0, c...)) != -1; });
+            [&]() { return (i = detail::readable_channel(channels)) != -1; });
     return i;
   }
 
-  template <class Clock, class Duration, typename... T>
+  template <class Clock, class Duration>
   int wait_until(const std::chrono::time_point<Clock, Duration> &timeout_time,
-                 Channel<T> &...c) {
+                 channel_list channels) {
     std::unique_lock<std::mutex> lock(mut);
     int i;
     cv.wait_until(lock, timeout_time, [&]() {
-      return (i = detail::readable_channel(0, c...)) != -1;
+      return (i = detail::readable_channel(channels)) != -1;
     });
     return i;
   }
 
-  template <class Rep, class Period, typename... T>
+  template <class Rep, class Period>
   int wait_for(const std::chrono::duration<Rep, Period> &rel_time,
-               Channel<T> &...c) {
+               channel_list channels) {
     std::unique_lock<std::mutex> lock(mut);
     int i;
     cv.wait_for(lock, rel_time, [&]() {
-      return (i = detail::readable_channel(0, c...)) != -1;
+      return (i = detail::readable_channel(channels)) != -1;
     });
     return i;
   }
@@ -76,7 +69,7 @@ public:
   /// first channel that has available data. All channels must be associated
   /// with this actor.
   template <typename... T> int wait(Channel<T> &...c) {
-    return impl->wait(c...);
+    return impl->wait({&c...});
   }
 
   /// Wait for data to arrive in one of n channels with a timeout; returns the
@@ -85,7 +78,7 @@ public:
   template <class Clock, class Duration, typename... T>
   int wait_until(const std::chrono::time_point<Clock, Duration> &timeout_time,
                  Channel<T> &...c) {
-    return impl->wait_until(timeout_time, c...);
+    return impl->wait_until(timeout_time, {&c...});
   }
 
   /// Wait for data to arrive in one of n channels with a timeout; returns the
@@ -94,7 +87,7 @@ public:
   template <class Rep, class Period, typename... T>
   int wait_for(const std::chrono::duration<Rep, Period> &rel_time,
                Channel<T> &...c) {
-    return impl->wait_for(rel_time, c...);
+    return impl->wait_for(rel_time, {&c...});
   }
 };
 
@@ -308,6 +301,13 @@ protected:
     actor_impl().cv.wait(lock, [&] { return readable_with_lock(); });
   }
 };
+
+int readable_channel(channel_list channels) {
+  for (int i = 0; i < channels.size(); i++)
+    if (channels.begin()[i]->readable_with_lock())
+      return i;
+  return -1;
+}
 
 } // namespace detail
 
