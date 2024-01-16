@@ -8,6 +8,7 @@ function(add_actorpp_test name source)
 endfunction()
 
 add_actorpp_test(basic_tests basic_tests.cpp)
+add_actorpp_test(queue_tests queue_tests.cpp)
 
 add_actorpp_test(net_tests_shutdown net_tests.cpp)
 target_compile_definitions(net_tests_shutdown
