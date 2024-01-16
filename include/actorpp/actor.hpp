@@ -113,9 +113,6 @@ template <typename T> struct ChannelImpl {
 
   bool readable_with_lock() { return !elements.empty(); }
 };
-
-/// just used for checking that ActorThread isn't applied more than once
-class IActorThread {};
 } // namespace detail
 
 /// An actor, whose only ability is to wait for data in associated channels. To
@@ -190,6 +187,11 @@ public:
   /// is this non-empty? requires the associated lock to be held
   bool readable_with_lock() { return impl->readable_with_lock(); }
 };
+
+namespace detail {
+/// just used for checking that ActorThread isn't applied more than once
+class IActorThread {};
+} // namespace detail
 
 /// Wrapper around a class derived from Actor, which runs its `void run()`
 /// method in a thread, and its `void exit()` method in the destructor. For the
