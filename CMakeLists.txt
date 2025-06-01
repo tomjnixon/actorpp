@@ -9,13 +9,17 @@ project(
   VERSION 0.0.1
   LANGUAGES CXX)
 
+include(GNUInstallDirs)
+
 add_subdirectory(submodules)
 
 find_package(Threads REQUIRED)
 
 add_library(actorpp INTERFACE)
 add_library(actorpp::actorpp ALIAS actorpp)
-target_include_directories(actorpp INTERFACE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(actorpp INTERFACE
+                           "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+                           "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 
 target_compile_features(actorpp INTERFACE cxx_std_11)
 target_link_libraries(actorpp INTERFACE Threads::Threads)
@@ -24,3 +28,14 @@ if(NOT SUBPROJECT)
   include(CTest)
   add_subdirectory(test)
 endif()
+
+install(TARGETS actorpp
+  EXPORT actorpp_targets
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+install(DIRECTORY include/actorpp TYPE INCLUDE)
+install(EXPORT actorpp_targets
+  FILE actorpp_targets.cmake
+  NAMESPACE actorpp::
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/actorpp
+)
