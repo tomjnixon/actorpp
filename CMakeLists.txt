@@ -11,8 +11,6 @@ project(
 
 include(GNUInstallDirs)
 
-add_subdirectory(submodules)
-
 find_package(Threads REQUIRED)
 
 add_library(actorpp INTERFACE)
@@ -26,6 +24,13 @@ target_link_libraries(actorpp INTERFACE Threads::Threads)
 
 if(NOT SUBPROJECT)
   include(CTest)
+
+  if(FIND_CATCH2)
+    find_package(Catch2 3 REQUIRED)
+  else()
+    add_subdirectory(submodules/catch2)
+  endif()
+
   add_subdirectory(test)
 endif()
 

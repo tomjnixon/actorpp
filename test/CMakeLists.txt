@@ -1,8 +1,6 @@
-include(${PROJECT_SOURCE_DIR}/submodules/catch2.cmake)
-
 function(add_actorpp_test name source)
   add_executable(${name} ${source})
-  target_link_libraries(${name} PRIVATE actorpp catch2)
+  target_link_libraries(${name} PRIVATE actorpp Catch2::Catch2WithMain)
   add_test(
     NAME ${name}
     COMMAND $<TARGET_FILE:${name}>

@@ -28,6 +28,14 @@
             pkgs.python3
           ];
 
+          checkInputs = [
+            pkgs.catch2_3
+          ];
+
+          cmakeFlags = [
+            (pkgs.lib.cmakeBool "FIND_CATCH2" true)
+          ];
+
           preCheck = ''
             python $src/test/test_server.py --fork --pid-file test_server_pid
           '';
