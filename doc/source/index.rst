@@ -51,7 +51,7 @@ This was built as part of the :ref:`ESHET <eshet:eshet_home>` home automation
 system; it's what all concurrency in :ref:`eshetcpp <eshetcpp:eshetcpp_home>`
 is implemented with.
 
-The core of `actorpp` only uses standard C++11 constructs, so should be very
+The core of `actorpp` only uses standard C++17 constructs, so should be very
 portable, while the networking library just uses UNIX sockets. It is regularly
 used on x86 linux, and ESP32 with freertos.
 
