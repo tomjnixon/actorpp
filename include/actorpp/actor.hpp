@@ -175,7 +175,7 @@ public:
     impl->emplace(std::forward<Args>(args)...);
   }
 
-  /// pop an element, will assert if empty
+  /// pop an element, will throw if empty
   T pop() { return impl->pop(); }
 
   /// pop an element, blocking if empty
