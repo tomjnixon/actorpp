@@ -35,12 +35,22 @@ if(NOT SUBPROJECT)
 endif()
 
 install(TARGETS actorpp
-  EXPORT actorpp_targets
+  EXPORT actorpp-targets
   INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 install(DIRECTORY include/actorpp TYPE INCLUDE)
-install(EXPORT actorpp_targets
-  FILE actorpp_targets.cmake
+install(EXPORT actorpp-targets
+  FILE actorpp-targets.cmake
   NAMESPACE actorpp::
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/actorpp
+)
+
+include(CMakePackageConfigHelpers)
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/config.cmake.in
+  "${CMAKE_CURRENT_BINARY_DIR}/actorpp-config.cmake"
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/actorpp
+)
+install(FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/actorpp-config.cmake"
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/actorpp
 )
